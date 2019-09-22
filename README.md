@@ -35,6 +35,7 @@ GraphCollection collection = result.getGraphs();
 * Executed on a cluster the following lib's has to be included (maven-shade-plugin)
 
 ```
+<include>org.gradoop:gradoop-capf</include>
 <include>org.opencypher:*</include>
 <include>org.apache.flink:flink-table_2.12</include>
 <include>org.parboiled:parboiled-scala_2.12</include>

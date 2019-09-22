@@ -7,6 +7,8 @@
     <groupId>org.gradoop</groupId>
     <artifactId>gradoop-capf</artifactId>
     <version>0.6.0-SNAPSHOT</version>
+
+
     <build>
         <plugins>
             <plugin>
@@ -27,11 +29,17 @@
             <releases><enabled>false</enabled></releases>
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
+        <repository>
+            <id>dbleipzig</id>
+            <name>DB Leipzig Archiva</name>
+            <url>https://wdiserv1.informatik.uni-leipzig.de:443/archiva/repository/dbleipzig/</url>
+        </repository>
     </repositories>
 
     <properties>
         <dep.gradoop.version>0.6.0-SNAPSHOT</dep.gradoop.version>
         <dep.flink.version>1.7.2</dep.flink.version>
+        <dep.okapi.version>0.2.4-SNAPSHOT</dep.okapi.version>
     </properties>
 
     <dependencies>
@@ -39,6 +47,37 @@
             <groupId>org.gradoop</groupId>
             <artifactId>gradoop-flink</artifactId>
             <version>${dep.gradoop.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table_2.12</artifactId>
+            <version>${dep.flink.version}</version>
+        </dependency>
+
+
+        <!-- CAPF Dependencies -->
+
+        <dependency>
+            <groupId>org.opencypher</groupId>
+            <artifactId>flink-cypher</artifactId>
+            <version>${dep.okapi.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opencypher</groupId>
+            <artifactId>spark-cypher</artifactId>
+            <version>${dep.okapi.version}</version>
         </dependency>
 
         <!-- Test Dependencies -->
