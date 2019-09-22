@@ -7,6 +7,21 @@ every Gradoop stable release.
 
 ### Use CAPF with Gradoop
 
+```
+LogicalGraph graph = source.getLogicalGraph(...)
+
+String cypherString = "MATCH ()-->() RETURN *";
+
+//Create CAPFQuery Object and execute cypher query
+CAPFResult result = new CAPFQuery(cypherString, getExecutionEnvirontment())
+.execute(graph);
+
+GraphCollection collection = result.getGraphs();
+```
+
+
+### Use CAPF dependencies
+
 * Add the following dependency to your gradoop project.
 
 ```xml
@@ -15,6 +30,20 @@ every Gradoop stable release.
     <artifactId>gradoop-capf</artifactId>
     <version>0.5.0</version>
 </dependency>
+```
+
+* Executed on a cluster the following lib's has to be included (maven-shade-plugin)
+
+```
+<include>org.opencypher:*</include>
+<include>org.apache.flink:flink-table_2.12</include>
+<include>org.parboiled:parboiled-scala_2.12</include>
+<include>com.lihaoyi:ujson_2.12</include>
+<include>com.lihaoyi:upickle_2.12</include>
+<include>org.typelevel:cats-kernel_2.12</include>
+<include>org.typelevel:cats-core_2.12</include>
+<include>org.atnos:eff_2.12</include>
+<include>org.parboiled:*</include>
 ```
 
 ### Build requirements
