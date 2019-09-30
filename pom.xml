@@ -38,8 +38,8 @@
 
     <properties>
         <dep.gradoop.version>0.6.0-SNAPSHOT</dep.gradoop.version>
-        <dep.flink.version>1.7.2</dep.flink.version>
-        <dep.okapi.version>0.2.4-SNAPSHOT</dep.okapi.version>
+        <dep.flink.version>1.7.0</dep.flink.version>
+        <dep.okapi.version>0.4.3-SNAPSHOT</dep.okapi.version>
     </properties>
 
     <dependencies>
@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-table_2.11</artifactId>
+            <artifactId>flink-table_2.12</artifactId>
             <version>${dep.flink.version}</version>
         </dependency>
 
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>org.opencypher</groupId>
-            <artifactId>spark-cypher</artifactId>
+            <artifactId>morpheus-spark-cypher</artifactId>
             <version>${dep.okapi.version}</version>
         </dependency>
 

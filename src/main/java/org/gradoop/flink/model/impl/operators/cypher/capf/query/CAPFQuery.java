@@ -21,7 +21,6 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple5;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.types.Row;
 import org.gradoop.common.model.impl.metadata.MetaData;
 import org.gradoop.common.model.impl.metadata.PropertyMetaData;
@@ -36,13 +35,13 @@ import org.gradoop.flink.model.impl.operators.cypher.capf.query.functions.*;
 import org.gradoop.flink.model.impl.operators.cypher.capf.result.CAPFQueryResult;
 import org.opencypher.flink.api.CAPFSession;
 import org.opencypher.flink.api.CAPFSession$;
-import org.opencypher.flink.api.io.CAPFNodeTable;
-import org.opencypher.flink.api.io.CAPFRelationshipTable;
+import org.opencypher.flink.api.io.CAPFElementTable;
 import org.opencypher.flink.impl.table.FlinkCypherTable;
 import org.opencypher.okapi.api.graph.PropertyGraph;
-import org.opencypher.okapi.api.io.conversion.NodeMapping;
-import org.opencypher.okapi.api.io.conversion.RelationshipMapping;
-import org.opencypher.okapi.relational.api.io.EntityTable;
+import org.opencypher.okapi.api.io.conversion.NodeMappingBuilder;
+import org.opencypher.okapi.api.io.conversion.RelationshipMappingBuilder;
+import org.opencypher.okapi.api.io.conversion.SingleElementMappingBuilder;
+import org.opencypher.okapi.relational.api.io.ElementTable;
 import scala.collection.JavaConversions;
 import scala.collection.mutable.Seq;
 import scala.reflect.ClassTag$;
@@ -54,8 +53,7 @@ import static org.gradoop.flink.model.impl.operators.cypher.capf.query.CAPFQuery
 
 
 /**
- * Execute a cypher query on a LogicalGraph via the CAPF (Cypher for Apache Flink)
- * API.
+ * Execute a cypher query on a LogicalGraph via the CAPF (Cypher for Apache Flink) API.
  */
 public class CAPFQuery implements Operator {
 
@@ -136,18 +134,18 @@ public class CAPFQuery implements Operator {
         .fromTuples(new CSVMetaDataSource().tuplesFromGraph(graph).collect());
     }
     // create flink tables of nodes as required by CAPF
-    List<CAPFNodeTable> nodeTables = createNodeTables(graph);
+    List<CAPFElementTable> nodeTables = createNodeTables(graph);
 
     // create flink tables of relationships as required by CAPF
-    List<CAPFRelationshipTable> relTables = createRelationshipTables(graph);
+    List<CAPFElementTable> relTables = createRelationshipTables(graph);
 
     // if there are no nodes, no edges can exit either, so we can terminate early
     if (nodeTables.size() > 0) {
-      List<EntityTable<FlinkCypherTable.FlinkTable>> tables = new ArrayList<>(
+      List<ElementTable<FlinkCypherTable.FlinkTable>> tables = new ArrayList<>(
         nodeTables.subList(1, nodeTables.size()));
       tables.addAll(relTables);
 
-      Seq<EntityTable<FlinkCypherTable.FlinkTable>> tableSeq =
+      Seq<ElementTable<FlinkCypherTable.FlinkTable>> tableSeq =
         JavaConversions.asScalaBuffer(tables);
 
       PropertyGraph g = session.readFrom(nodeTables.get(0), tableSeq);
@@ -177,10 +175,8 @@ public class CAPFQuery implements Operator {
    * @return a graph with transformed vertex and edge properties
    */
   private LogicalGraph transformGraphProperties(LogicalGraph graph) {
-    DataSet<EPGMVertex> transformedVertices = graph.getVertices()
-      .map(new PropertyEncoder<>());
-    DataSet<EPGMEdge> transformedEdges = graph.getEdges()
-      .map(new PropertyEncoder<>());
+    DataSet<EPGMVertex> transformedVertices = graph.getVertices().map(new PropertyEncoder<>());
+    DataSet<EPGMEdge> transformedEdges = graph.getEdges().map(new PropertyEncoder<>());
 
     return graph.getFactory().fromDataSets(transformedVertices, transformedEdges);
   }
@@ -193,8 +189,8 @@ public class CAPFQuery implements Operator {
    * @param graph the graph whose vertices should be transformed into CAPF tables
    * @return a list of node tables, one table per vertex label
    */
-  private List<CAPFNodeTable> createNodeTables(LogicalGraph graph) {
-    List<CAPFNodeTable> nodeTables = new ArrayList<>();
+  private List<CAPFElementTable> createNodeTables(LogicalGraph graph) {
+    List<CAPFElementTable> nodeTables = new ArrayList<>();
 
     verticesWithIds = graph.getVertices().map(new UniqueIdWithOffset<>());
     vertexCount = Count.count(graph.getVertices());
@@ -231,22 +227,24 @@ public class CAPFQuery implements Operator {
 
       // build table schema string, naming each field in the table
       StringBuilder schemaStringBuilder = new StringBuilder(NODE_ID);
-      NodeMapping nodeMapping = NodeMapping.withSourceIdKey(NODE_ID)
+      SingleElementMappingBuilder nodeMappingBuilder = NodeMappingBuilder
+        .withSourceIdKey(NODE_ID)
         .withImpliedLabel(label);
+
 
       for (String propKey : propKeys) {
         schemaStringBuilder.append(", ").append(PROPERTY_PREFIX).append(propKey);
-
-        nodeMapping = nodeMapping.withPropertyKey(propKey, PROPERTY_PREFIX + propKey);
+        nodeMappingBuilder =
+          (SingleElementMappingBuilder) nodeMappingBuilder.withPropertyKey(propKey, PROPERTY_PREFIX + propKey);
       }
 
       String schemaString = schemaStringBuilder.toString();
 
       // create table, add to node table list
-      Table vertexTable = session.tableEnv()
-        .fromDataSet(scalaRowDataSet).as(schemaString);
+      FlinkCypherTable.FlinkTable vertexTable = FlinkCypherTable.FlinkTable(
+        session.tableEnv().fromDataSet(scalaRowDataSet).as(schemaString), session);
 
-      nodeTables.add(CAPFNodeTable.fromMapping(nodeMapping, vertexTable));
+      nodeTables.add(CAPFElementTable.create(nodeMappingBuilder.build(), vertexTable, session));
     }
 
     return nodeTables;
@@ -260,8 +258,8 @@ public class CAPFQuery implements Operator {
    * @param graph the graph whose edges should be transformed into CAPF tables
    * @return a list of edge tables, one table per edge label
    */
-  private List<CAPFRelationshipTable> createRelationshipTables(LogicalGraph graph) {
-    List<CAPFRelationshipTable> relTables = new ArrayList<>();
+  private List<CAPFElementTable> createRelationshipTables(LogicalGraph graph) {
+    List<CAPFElementTable> relTables = new ArrayList<>();
 
     edgesWithIds = graph.getEdges().map(new UniqueIdWithOffset<>())
       .withBroadcastSet(vertexCount, OFFSET);
@@ -314,23 +312,24 @@ public class CAPFQuery implements Operator {
         .append(START_NODE).append(", ")
         .append(END_NODE);
 
-      RelationshipMapping relMapping = RelationshipMapping.withSourceIdKey(EDGE_ID)
+      SingleElementMappingBuilder relMappingBuilder = RelationshipMappingBuilder.withSourceIdKey(EDGE_ID)
         .withSourceStartNodeKey(START_NODE)
         .withSourceEndNodeKey(END_NODE)
         .withRelType(label);
 
       for (String propKey : propKeys) {
         schemaStringBuilder.append(", ").append(PROPERTY_PREFIX).append(propKey);
-        relMapping = relMapping.withPropertyKey(propKey, PROPERTY_PREFIX + propKey);
+        relMappingBuilder =
+          (SingleElementMappingBuilder) relMappingBuilder.withPropertyKey(propKey, PROPERTY_PREFIX + propKey);
       }
 
       String schemaString = schemaStringBuilder.toString();
 
       // create table, add to relationship table list
-      Table edgeTable = session.tableEnv()
-        .fromDataSet(scalaRowDataSet).as(schemaString);
+      FlinkCypherTable.FlinkTable edgeTable = FlinkCypherTable.FlinkTable(
+        session.tableEnv().fromDataSet(scalaRowDataSet).as(schemaString), session);
 
-      relTables.add(CAPFRelationshipTable.fromMapping(relMapping, edgeTable));
+      relTables.add(CAPFElementTable.create(relMappingBuilder.build(), edgeTable, session));
     }
 
     return relTables;

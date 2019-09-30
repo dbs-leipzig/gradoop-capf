@@ -18,6 +18,7 @@ package org.gradoop.flink.model.impl.operators.cypher.capf.query;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.io.LocalCollectionOutputFormat;
 import org.apache.flink.table.api.scala.BatchTableEnvironment;
 import org.apache.flink.types.Row;
 import org.gradoop.common.model.impl.metadata.MetaData;
@@ -241,6 +242,11 @@ public class CAPFQueryTest extends GradoopFlinkTestBase {
     DataSet<Row> resultDataSet = tenv.toDataSet(result.getTable(), TypeInformation.of(Row.class)).javaSet();
 
     List<Row> resultList = resultDataSet.collect();
+
+    for (Row spalte: resultList) {
+      System.out.println(spalte.toString());
+    }
+
     assertEquals(1, resultList.size());
     assertEquals(1, resultList.get(0).getArity());
     assertEquals(6L, (long) resultList.get(0).getField(0));

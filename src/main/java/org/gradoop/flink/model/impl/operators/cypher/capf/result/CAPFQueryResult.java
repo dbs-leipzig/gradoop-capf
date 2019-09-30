@@ -113,7 +113,7 @@ public class CAPFQueryResult {
     this.factory = factory;
 
     this.session = ((CAPFRecords) result.records()).capf();
-    this.isGraph = !records.header().entityVars().isEmpty();
+    this.isGraph = !records.header().elementVars().isEmpty();
   }
 
 
@@ -147,14 +147,14 @@ public class CAPFQueryResult {
       otherVars.add(varIt.next());
     }
 
-    Iterator<Var> nodeVarIt = records.header().nodeEntities().iterator();
+    Iterator<Var> nodeVarIt = records.header().nodeElements().iterator();
     while (nodeVarIt.hasNext()) {
       Var nodeVar = nodeVarIt.next();
       nodeVars.add(nodeVar);
       otherVars.remove(nodeVar);
     }
 
-    Iterator<Var> relVarIt = records.header().relationshipEntities().iterator();
+    Iterator<Var> relVarIt = records.header().relationshipElements().iterator();
     while (relVarIt.hasNext()) {
       Var relVar = relVarIt.next();
       relVars.add(relVar);
