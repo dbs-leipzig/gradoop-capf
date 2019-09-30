@@ -70,7 +70,8 @@ public class CAPFQueryTest extends GradoopFlinkTestBase {
 
     MetaData metaData = new CSVMetaData(new HashMap<>(), vertexPropertyMap, edgePropertyMap);
 
-    CAPFQueryResult result = graph.cypher("MATCH (n1)-->(n2)<--(n3) RETURN n2", metaData);
+    CAPFQueryResult result = new CAPFQuery("MATCH (n1)-->(n2)<--(n3) RETURN n2", metaData,
+      getExecutionEnvironment()).execute(graph);
 
     // because the pattern is symmetric, each result exists twice
     GraphCollection expectedGraphs = loader.getGraphCollectionByVariables(
@@ -169,9 +170,8 @@ public class CAPFQueryTest extends GradoopFlinkTestBase {
 
     MetaData metaData = new CSVMetaData(new HashMap<>(), vertexPropertyMap, edgePropertyMap);
 
-    CAPFQueryResult result = graph.cypher(
-      "MATCH (n1)-->(n2)-->(n3) RETURN n1.id, n2.id, n3.id",
-      metaData);
+    CAPFQueryResult result = new CAPFQuery("MATCH (n1)-->(n2)-->(n3) RETURN n1.id, n2.id, n3.id",
+      metaData, getExecutionEnvironment()).execute(graph);
 
     BatchTableEnvironment tenv = (BatchTableEnvironment) result.getTable().tableEnv();
     DataSet<Row> resultDataSet =
@@ -233,10 +233,9 @@ public class CAPFQueryTest extends GradoopFlinkTestBase {
 
     MetaData metaData = new CSVMetaData(new HashMap<>(), vertexPropertyMap, edgePropertyMap);
 
-    CAPFQueryResult result = graph.cypher(
+    CAPFQueryResult result = new CAPFQuery(
       "MATCH (n1) RETURN avg(n1.id)",
-      metaData
-    );
+      metaData, getExecutionEnvironment()).execute(graph);
 
     BatchTableEnvironment tenv = (BatchTableEnvironment) result.getTable().tableEnv();
     DataSet<Row> resultDataSet = tenv.toDataSet(result.getTable(), TypeInformation.of(Row.class)).javaSet();

@@ -98,7 +98,7 @@ public class CAPFPatternMatchingTest extends GradoopFlinkTestBase {
     loader.appendToDatabaseFromString(expectedCollection);
 
     // execute and validate
-    CAPFQueryResult capfResult = db.cypher(queryGraph, metaData);
+    CAPFQueryResult capfResult = new CAPFQuery(queryGraph, metaData, getExecutionEnvironment()).execute(db);
     if (capfResult.containsGraphs()) {
       GraphCollection result = capfResult.getGraphs();
       GraphCollection expected = loader.getGraphCollectionByVariables(expectedGraphVariables);
@@ -119,7 +119,7 @@ public class CAPFPatternMatchingTest extends GradoopFlinkTestBase {
     loader.appendToDatabaseFromString(expectedCollection);
 
     // execute and validate
-    CAPFQueryResult capfResult = db.cypher(queryGraph, metaData);
+    CAPFQueryResult capfResult = new CAPFQuery(queryGraph, metaData, getExecutionEnvironment()).execute(db);
     if (capfResult.containsGraphs()) {
       GraphCollection result = capfResult.getGraphs();
       GraphCollection expected = loader.getGraphCollectionByVariables(expectedGraphVariables);
