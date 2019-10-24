@@ -1,6 +1,6 @@
 ## Gradoop-CAPF: Cypher for Apache Flink
 
-This [GRADOOP](https://github.com/dbs-leipzig/gradoop) operator is based on a work in progress master thesis of Sören Reichhard ([GitHub](https://github.com/soerenreichardt/cypher-for-apache-flink)). CAPF is based on Neo4j's [Morpheus](https://github.com/opencypher/morpheus) project and supports the opencypher grammar. CAPF will be released alongside 
+This [GRADOOP](https://github.com/dbs-leipzig/gradoop) operator is based on a work in progress master thesis ([GitHub](https://github.com/soerenreichardt/cypher-for-apache-flink)). CAPF is based on Neo4j's [Morpheus](https://github.com/opencypher/morpheus) project and supports the opencypher grammar. CAPF will be released alongside 
 every Gradoop stable release. 
 
 ## Usage
@@ -40,7 +40,10 @@ GraphCollection collection = result.getGraphs();
 <include>org.apache.flink:flink-table_2.12</include>
 <include>org.parboiled:parboiled-scala_2.12</include>
 <include>com.lihaoyi:ujson_2.12</include>
+<include>com.lihaoyi:upack_2.12</include>
 <include>com.lihaoyi:upickle_2.12</include>
+<include>com.lihaoyi:upickle-core_2.12</include>
+<include>com.lihaoyi:upickle-implicits_2.12</include>
 <include>org.typelevel:cats-kernel_2.12</include>
 <include>org.typelevel:cats-core_2.12</include>
 <include>org.atnos:eff_2.12</include>
