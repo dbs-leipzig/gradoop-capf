@@ -28,7 +28,7 @@ GraphCollection collection = result.getGraphs();
 <dependency>
     <groupId>org.gradoop</groupId>
     <artifactId>gradoop-capf</artifactId>
-    <version>0.5.0</version>
+    <version>0.5.1</version>
 </dependency>
 ```
 
