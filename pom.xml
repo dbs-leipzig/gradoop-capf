@@ -13,6 +13,107 @@
     <artifactId>gradoop-capf</artifactId>
     <version>0.5.1</version>
 
+    <name>CAPF Operator for Gradoop</name>
+    <description>Provides the CAPF pattern matching operator for Gradoop.</description>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Kevin Gomez</name>
+            <id>galpha</id>
+            <email>gomez@informatik.uni-leipzig.de</email>
+            <organization>University of Leipzig</organization>
+        </developer>
+        <developer>
+            <name>Niklas Teichmann</name>
+            <id>niklasteichmann</id>
+            <organization>University of Leipzig</organization>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>http://github.com/dbs-leipzig/gradoop-capf.git</url>
+        <connection>scm:git:git@github.com:dbs-leipzig/gradoop-capf.git</connection>
+        <developerConnection>
+            scm:git:dbs-leipzig@github.com/dbs-leipzig/gradoop-capf.git
+        </developerConnection>
+    </scm>
+
+    <properties>
+        <dep.gradoop.version>0.5.1</dep.gradoop.version>
+        <dep.flink.version>1.7.0</dep.flink.version>
+        <dep.okapi.version>0.4.3-SNAPSHOT</dep.okapi.version>
+
+        <plugin.maven-source.version>3.0.1</plugin.maven-source.version>
+        <plugin.maven-javadoc.version>3.1.1</plugin.maven-javadoc.version>
+        <plugin.maven-gpg.version>1.6</plugin.maven-gpg.version>
+    </properties>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>release_artifacts_gradoop</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>release_artifacts_gradoop</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${plugin.maven-source.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${plugin.maven-gpg.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${plugin.maven-nexus-staging.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>release_artifacts_gradoop</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -22,6 +123,22 @@
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${plugin.maven-javadoc.version}</version>
+                <configuration>
+                    <quiet>true</quiet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -40,13 +157,9 @@
         </repository>
     </repositories>
 
-    <properties>
-        <dep.gradoop.version>0.5.1</dep.gradoop.version>
-        <dep.flink.version>1.7.0</dep.flink.version>
-        <dep.okapi.version>0.4.3-SNAPSHOT</dep.okapi.version>
-    </properties>
-
     <dependencies>
+
+        <!-- Gradoop Dependencies -->
         <dependency>
             <groupId>org.gradoop</groupId>
             <artifactId>gradoop-flink</artifactId>
@@ -66,7 +179,6 @@
         </dependency>
 
         <!-- CAPF Dependencies -->
-
         <dependency>
             <groupId>org.opencypher</groupId>
             <artifactId>flink-cypher</artifactId>
@@ -90,7 +202,6 @@
         </dependency>
 
         <!-- Test Dependencies -->
-
         <dependency>
             <groupId>org.gradoop</groupId>
             <artifactId>gradoop-flink</artifactId>
